@@ -85,6 +85,45 @@ export class ShipmentsService {
     return this.transition(this.requireStatus(id, [ShipmentStatus.PENDING]), ShipmentStatus.CANCELLED, '取消运单', user);
   }
 
+  update(id: string, payload: Partial<Pick<Shipment, 'items' | 'estimatedArrival' | 'remark'>>, user?: User) {
+    const shipment = this.requireStatus(id, [ShipmentStatus.PENDING]);
+    const changes: string[] = [];
+
+    if (payload.items !== undefined) {
+      const oldItems = shipment.items.map(i => `${i.skuName}×${i.quantity}`).join(', ');
+      const newItems = payload.items.map(i => `${i.skuName}×${i.quantity}`).join(', ');
+      if (oldItems !== newItems) {
+        shipment.items = payload.items.map((item) => ({ ...item, id: item.id || uuid(), shipmentId: shipment.id }));
+        changes.push(`商品明细: ${oldItems} → ${newItems}`);
+      }
+    }
+
+    if (payload.estimatedArrival !== undefined && payload.estimatedArrival !== shipment.estimatedArrival) {
+      changes.push(`预计到达: ${shipment.estimatedArrival} → ${payload.estimatedArrival}`);
+      shipment.estimatedArrival = payload.estimatedArrival;
+    }
+
+    if (payload.remark !== undefined && payload.remark !== shipment.remark) {
+      changes.push(`备注: ${shipment.remark || '(空)'} → ${payload.remark || '(空)'}`);
+      shipment.remark = payload.remark;
+    }
+
+    if (changes.length > 0) {
+      const now = new Date().toISOString();
+      shipment.updatedAt = now;
+      shipment.timeline.unshift({
+        id: uuid(),
+        status: shipment.status,
+        operator: user?.name ?? '系统',
+        note: `修改运单信息：${changes.join('; ')}`,
+        createdAt: now,
+      });
+      auditService.record({ action: 'UPDATE', module: 'SHIPMENT', targetId: shipment.id, targetName: shipment.orderNo, detail: payload }, user);
+    }
+
+    return shipment;
+  }
+
   private requireStatus(id: string, allowed: ShipmentStatus[]) {
     const shipment = shipments.find((item) => item.id === id);
     if (!shipment) throw new BusinessException(404, '运单不存在');

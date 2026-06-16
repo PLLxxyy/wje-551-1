@@ -12,3 +12,4 @@ shipmentsRoutes.post('/:id/transit', requirePermission(PERMISSIONS.SHIPMENT_WRIT
 shipmentsRoutes.post('/:id/receive', requirePermission(PERMISSIONS.SHIPMENT_RECEIVE), (req, res) => shipmentsController.receive(req, res));
 shipmentsRoutes.post('/:id/exception', requirePermission(PERMISSIONS.SHIPMENT_WRITE), (req, res) => shipmentsController.exception(req, res));
 shipmentsRoutes.post('/:id/cancel', requirePermission(PERMISSIONS.SHIPMENT_WRITE), (req, res) => shipmentsController.cancel(req, res));
+shipmentsRoutes.put('/:id', requirePermission(PERMISSIONS.SHIPMENT_WRITE), (req, res) => shipmentsController.update(req, res));

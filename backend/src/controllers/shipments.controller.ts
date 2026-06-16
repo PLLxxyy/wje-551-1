@@ -12,6 +12,7 @@ export class ShipmentsController {
   receive(req: Request, res: Response) { res.json(ok(shipmentsService.receive(req.params.id, resLocals(req).user))); }
   exception(req: Request, res: Response) { res.json(ok(shipmentsService.exception(req.params.id, req.body.reason, resLocals(req).user))); }
   cancel(req: Request, res: Response) { res.json(ok(shipmentsService.cancel(req.params.id, resLocals(req).user))); }
+  update(req: Request, res: Response) { res.json(ok(shipmentsService.update(req.params.id, req.body, resLocals(req).user))); }
 }
 
 export const shipmentsController = new ShipmentsController();

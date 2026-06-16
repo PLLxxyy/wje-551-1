@@ -10,4 +10,5 @@ export const shipmentsApi = {
   receive: (id: string) => request.post(`/shipments/${id}/receive`),
   exception: (id: string, reason: string) => request.post(`/shipments/${id}/exception`, { reason }),
   cancel: (id: string) => request.post(`/shipments/${id}/cancel`),
+  update: (id: string, payload: Partial<Shipment>) => request.put<Shipment>(`/shipments/${id}`, payload),
 };
